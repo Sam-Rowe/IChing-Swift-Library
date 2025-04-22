@@ -5,6 +5,8 @@
 //  Created by Samuel Rowe on 22/04/2025.
 //
 
+
+// I think this is bull at the moment.
 public struct Change {
     public let changingLines: [Bool]
     public let resultingHexagram: Hexagram

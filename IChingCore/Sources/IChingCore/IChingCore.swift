@@ -1,33 +1,149 @@
 // The Swift Programming Language
 // https://docs.swift.org/swift-book
 
+// Import a seed for randomness from the crypto library
+import Foundation
+
+
+
 
 public class IChing {
-    public static func ask(_ question: String) -> Reading {
-        // TODO: Generate lines, create hexagram, possibly determine change
-    }
+    private var entropy: Double = 0.0
     
-    public enum IChing {
-        public static func ask(_ question: String) -> Reading {
-            let originalLines = generateHexagramLines()
-            let hexagram = findHexagram(from: originalLines)
-
-            let changingLines = generateChangingLines()
-            if changingLines.contains(true) {
-                let newLines = applyChanges(to: originalLines, changes: changingLines)
-                let changedHexagram = findHexagram(from: newLines)
-
-                let change = Change(
-                    changingLines: changingLines,
-                    resultingHexagram: changedHexagram
-                )
-
-                return Reading(question: question, hexagram: hexagram, change: change)
-            } else {
-                return Reading(question: question, hexagram: hexagram, change: nil)
+    public static func ask(_ question: String) -> Reading {
+        var rng = SeededGenerator(seed: seed(from: question))
+        var hexagramReadingLines: [Int] = []
+        var changingReadingLines: [Int] = []
+        for i in 0..<6 {
+            // do stuff calls generateALine
+            var line = generateALine(using: &rng)
+            switch line {
+            case 9:
+                hexagramReadingLines.append(1)
+                changingReadingLines.append(1)
+            case 8:
+                hexagramReadingLines.append(0)
+                changingReadingLines.append(0)
+            case 7:
+                hexagramReadingLines.append(1)
+                changingReadingLines.append(0)
+            case 6:
+                hexagramReadingLines.append(0)
+                changingReadingLines.append(1)
+            default:
+                print("Unexpected line value: \(line)")
             }
         }
+        return Reading(question: question, hexagram: hexagramReadingLines[0], change: nil)
     }
+    
+    private struct composite {
+        var stalksUsed: Int
+        var number: Int
+    }
+    
+    
+    private static func generateALine(using rng: inout SeededGenerator) -> Int {
+        var stalks: Int = 49
+        
+        var lineSum = 0
+        do {
+            for j in 1..<3 {
+                let comp = try generateComposite(numberOfStalks: stalks, using: &rng)
+                stalks -= comp.stalksUsed
+                lineSum += comp.number
+            }
+        } catch {
+            print("Error generating line: \(error)")
+        }
+        
+        return lineSum
+    }
+    
+    enum IChingError: Error {
+        case invalidStalksUsed(Int)
+        case unexpectedState
+    }
+    
+    
+    private static func generateComposite(numberOfStalks: Int, using rng: inout SeededGenerator) throws -> composite {
+        var returnValue: composite = composite(stalksUsed: 0, number: 0)
+        var stalksUsed: Int = 0
+        var remainder: Int = 0
+        var leftPileSize = Int(ceil(rng.nextDouble() * Double(numberOfStalks - 9) + 4))
+        var rightPileSize = numberOfStalks - leftPileSize
+        
+        // Take one stalk from right pile and put it between the little finger and the next finger on the left hand
+        rightPileSize -= 1
+        stalksUsed += 1
+        
+        // Take bundles of 4 from the left pile until 4 or less remain
+        // Place between the middle and ring finger on left hand
+        remainder = getRemainder(pile: leftPileSize)
+        leftPileSize -= remainder
+        stalksUsed += remainder
+        
+        // Take Bundles of 4 from the right pile until there are less than 4 remaining
+        // Place them between the middle and ring fingers on the left hand
+        remainder = getRemainder(pile: rightPileSize)
+        rightPileSize -= remainder
+        stalksUsed += remainder
+        
+        returnValue.stalksUsed = stalksUsed
+        
+        if stalksUsed == 9 || stalksUsed == 8 {
+            returnValue.number = 2
+        } else if stalksUsed == 5 || stalksUsed == 4 {
+            returnValue.number = 3
+        } else {
+            throw IChingError.invalidStalksUsed(stalksUsed)
+        }
+        
+        return returnValue
+        
+    }
+    
+    private static func getRemainder(pile: Int) -> Int {
+        var rem = pile % 4
+        if rem == 0 {
+            return 4
+        }
+        return rem
+    }
+    
+    private static func seed(from string: String) -> UInt64 {
+        var hasher = Hasher()
+        hasher.combine(string)
+        return UInt64(bitPattern: Int64(hasher.finalize()))
+    }
+
+    private struct SeededGenerator: RandomNumberGenerator {
+        private var state: UInt64
+
+        init(seed: UInt64) {
+            self.state = seed != 0 ? seed : 0xdeadbeef
+        }
+
+        mutating func next() -> UInt64 {
+            state = 6364136223846793005 &* state &+ 1
+            return state
+        }
+
+        mutating func nextDouble() -> Double {
+            return Double(next()) / Double(UInt64.max)
+        }
+    }
+
+
+    private static func floatFromStringSeed(_ string: String) -> Double {
+        var rng = SeededGenerator(seed: seed(from: string))
+        return Double(rng.next() % UInt64.max) / Double(UInt64.max)
+    }
+
+    private func getTrueRandomFloat() -> Double {
+        return Double.random(in: 0.0 ... 1.0)
+    }
+    
 
     private static func generateHexagramLines() -> [Bool] {
         return (0..<6).map { _ in Bool.random() }

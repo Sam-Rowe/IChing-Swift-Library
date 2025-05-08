@@ -11,12 +11,17 @@ public class IChing {
     private var entropy: Double = 0.0
     
     public static func ask(_ question: String) -> Reading {
-        var rng = SeededGenerator(seed: seed(from: question))
+        let seed = seed(from: question)
+        return ask(question, seed: seed)
+    }
+    
+    // Internal/testing only: allows deterministic seeding
+    static func ask(_ question: String, seed: UInt64) -> Reading {
+        var rng = SeededGenerator(seed: seed)
         var hexagramReadingLines: [Int] = []
         var changingReadingLines: [Int] = []
-        for i in 0..<6 {
-            // do stuff calls generateALine
-            var line = generateALine(using: &rng)
+        for _ in 0..<6 {
+            let line = generateALine(using: &rng)
             switch line {
             case 9:
                 hexagramReadingLines.append(1)
@@ -34,7 +39,9 @@ public class IChing {
                 print("Unexpected line value: \(line)")
             }
         }
-        return Reading(question: question, hexagram: hexagramReadingLines[0], change: nil)
+        let hexagramLinesBool = hexagramReadingLines.map { $0 == 1 }
+        let hexagram = findHexagram(from: hexagramLinesBool)
+        return Reading(question: question, hexagram: hexagram, change: nil)
     }
     
     private struct composite {
@@ -163,5 +170,8 @@ public class IChing {
     }
 
 }
+
+
+
 
 

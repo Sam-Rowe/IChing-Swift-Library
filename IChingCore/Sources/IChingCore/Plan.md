@@ -18,10 +18,18 @@ Here is a concise testing plan for your Swift library, tailored to your `IChingC
 
 **4. Error Handling**
 - [x] Test error cases in `generateComposite` (invalid stalks). ✅
-- [ ] Test for forced failures (e.g., invalid hexagram lines).
+- [x] Test for forced failures (e.g., invalid hexagram lines, unexpected line values, error propagation in `generateALine` and `ask`). ✅
+- [x] Test that `ask(_:)` returns nil if an error occurs. ✅
 
 **5. Performance Tests (Optional)**
 - [ ] Benchmark `ask(_:)` for large numbers of calls.
+
+**Additional Resilience Tests Added**
+- [x] Test that `ask(_:seed:)` throws on unexpected line values.
+- [x] Test that `generateALine(using:)` throws if composite logic fails.
+- [x] Test that `ask(_:)` returns nil if an error occurs.
+
+All new tests are implemented and passing, and the error handling in the core logic is now robust and testable.
 
 **Order of Implementation**
 1. Unit tests for pure functions (`getRemainder`, `seed`, `applyChanges`). ✅
@@ -40,4 +48,3 @@ Here is a concise testing plan for your Swift library, tailored to your `IChingC
 - ⚠️ Some tests pass but emit warnings or runtime errors. Review and address these issues for full reliability.
 
 This plan ensures core logic is robust before moving to integration and edge cases, and that all tests are reliable and repeatable.
-

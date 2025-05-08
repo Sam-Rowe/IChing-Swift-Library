@@ -10,18 +10,18 @@ import Foundation
 public class IChing {
     private var entropy: Double = 0.0
     
-    public static func ask(_ question: String) -> Reading {
+    public static func ask(_ question: String) -> Reading? {
         let seed = seed(from: question)
-        return ask(question, seed: seed)
+        return try? ask(question, seed: seed)
     }
     
-    // Internal/testing only: allows deterministic seeding
-    static func ask(_ question: String, seed: UInt64) -> Reading {
+    // Now throws on error
+    static func ask(_ question: String, seed: UInt64) throws -> Reading {
         var rng = SeededGenerator(seed: seed)
         var hexagramReadingLines: [Int] = []
         var changingReadingLines: [Int] = []
         for _ in 0..<6 {
-            let line = generateALine(using: &rng)
+            let line = try generateALine(using: &rng)
             switch line {
             case 9:
                 hexagramReadingLines.append(1)
@@ -36,7 +36,7 @@ public class IChing {
                 hexagramReadingLines.append(0)
                 changingReadingLines.append(1)
             default:
-                print("Unexpected line value: \(line)")
+                throw IChingError.unexpectedLineValue(line)
             }
         }
         let hexagramLinesBool = hexagramReadingLines.map { $0 == 1 }
@@ -50,26 +50,21 @@ public class IChing {
     }
     
     
-    internal static func generateALine(using rng: inout SeededGenerator) -> Int {
+    internal static func generateALine(using rng: inout SeededGenerator) throws -> Int {
         var stalks: Int = 49
-        
         var lineSum = 0
-        do {
-            for j in 1..<3 {
-                let comp = try generateComposite(numberOfStalks: stalks, using: &rng)
-                stalks -= comp.stalksUsed
-                lineSum += comp.number
-            }
-        } catch {
-            print("Error generating line: \(error)")
+        for _ in 1..<3 {
+            let comp = try generateComposite(numberOfStalks: stalks, using: &rng)
+            stalks -= comp.stalksUsed
+            lineSum += comp.number
         }
-        
         return lineSum
     }
     
     enum IChingError: Error {
         case invalidStalksUsed(Int)
         case unexpectedState
+        case unexpectedLineValue(Int)
     }
     
     
@@ -111,7 +106,7 @@ public class IChing {
     }
     
     internal static func getRemainder(pile: Int) -> Int {
-        var rem = pile % 4
+        let rem = pile % 4
         if rem == 0 {
             return 4
         }
@@ -170,6 +165,8 @@ public class IChing {
     }
 
 }
+
+
 
 
 

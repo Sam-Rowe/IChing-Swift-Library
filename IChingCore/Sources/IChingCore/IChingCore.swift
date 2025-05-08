@@ -44,13 +44,13 @@ public class IChing {
         return Reading(question: question, hexagram: hexagram, change: nil)
     }
     
-    private struct composite {
+    internal struct composite {
         var stalksUsed: Int
         var number: Int
     }
     
     
-    private static func generateALine(using rng: inout SeededGenerator) -> Int {
+    internal static func generateALine(using rng: inout SeededGenerator) -> Int {
         var stalks: Int = 49
         
         var lineSum = 0
@@ -73,7 +73,7 @@ public class IChing {
     }
     
     
-    private static func generateComposite(numberOfStalks: Int, using rng: inout SeededGenerator) throws -> composite {
+    internal static func generateComposite(numberOfStalks: Int, using rng: inout SeededGenerator) throws -> composite {
         var returnValue: composite = composite(stalksUsed: 0, number: 0)
         var stalksUsed: Int = 0
         var remainder: Int = 0
@@ -110,7 +110,7 @@ public class IChing {
         
     }
     
-    private static func getRemainder(pile: Int) -> Int {
+    internal static func getRemainder(pile: Int) -> Int {
         var rem = pile % 4
         if rem == 0 {
             return 4
@@ -118,13 +118,13 @@ public class IChing {
         return rem
     }
     
-    private static func seed(from string: String) -> UInt64 {
+    internal static func seed(from string: String) -> UInt64 {
         var hasher = Hasher()
         hasher.combine(string)
         return UInt64(bitPattern: Int64(hasher.finalize()))
     }
 
-    private struct SeededGenerator: RandomNumberGenerator {
+    internal struct SeededGenerator: RandomNumberGenerator {
         private var state: UInt64
 
         init(seed: UInt64) {
@@ -160,16 +160,19 @@ public class IChing {
         return (0..<6).map { _ in Bool.random() && Bool.random() } // roughly 25% chance of change
     }
 
-    private static func applyChanges(to lines: [Bool], changes: [Bool]) -> [Bool] {
+    internal static func applyChanges(to lines: [Bool], changes: [Bool]) -> [Bool] {
         zip(lines, changes).map { $1 ? !$0 : $0 }
     }
 
-    private static func findHexagram(from lines: [Bool]) -> Hexagram {
+    internal static func findHexagram(from lines: [Bool]) -> Hexagram {
         let binaryString = lines.map { $0 ? "1" : "0" }.joined()
         return Hexagram.all.first { $0.binary == binaryString }!
     }
 
 }
+
+
+
 
 
 

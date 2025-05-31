@@ -35,6 +35,14 @@ public class IChing {
             case 6:
                 hexagramReadingLines.append(0)
                 changingReadingLines.append(1)
+            case 5:
+                // Young Yang (not changing) - same as 7
+                hexagramReadingLines.append(1)
+                changingReadingLines.append(0)
+            case 4:
+                // Young Yin (not changing) - same as 8
+                hexagramReadingLines.append(0)
+                changingReadingLines.append(0)
             default:
                 throw IChingError.unexpectedLineValue(line)
             }

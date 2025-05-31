@@ -172,3 +172,44 @@ import Testing
                 "Stalks used \(composite.stalksUsed) should be between 4 and 9")
     }
 }
+
+@Test func testEntropyBehavior() async throws {
+    let question = "What is the way?"
+    
+    // Test non-deterministic behavior (should be different each time)
+    let reading1 = IChing.ask(question)
+    let reading2 = IChing.ask(question)
+    let reading3 = IChing.ask(question)
+    
+    // Note: These might occasionally be the same by chance (1/64 probability)
+    // but statistically should usually be different
+    #expect(reading1 != nil)
+    #expect(reading2 != nil)
+    #expect(reading3 != nil)
+    
+    // Test deterministic behavior (should be same each time)
+    let det1 = IChing.ask(question, deterministic: true)
+    let det2 = IChing.ask(question, deterministic: true)
+    
+    #expect(det1 != nil)
+    #expect(det2 != nil)
+    if let d1 = det1, let d2 = det2 {
+        #expect(d1.hexagram.number == d2.hexagram.number, "Deterministic readings should be identical")
+        #expect(d1.hexagram.lines == d2.hexagram.lines, "Deterministic lines should be identical")
+    }
+}
+
+@Test func testDifferentQuestionsGiveDifferentResults() async throws {
+    // Even with deterministic mode, different questions should give different results
+    let result1 = IChing.ask("Question 1", deterministic: true)
+    let result2 = IChing.ask("Question 2", deterministic: true)
+    
+    #expect(result1 != nil)
+    #expect(result2 != nil)
+    
+    if let r1 = result1, let r2 = result2 {
+        // Different questions should (usually) give different hexagrams
+        // Note: There's a small chance they could be the same
+        #expect(r1.hexagram.number != r2.hexagram.number || r1.hexagram.lines != r2.hexagram.lines)
+    }
+}

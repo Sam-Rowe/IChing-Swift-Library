@@ -11,8 +11,29 @@ public class IChing {
     private var entropy: Double = 0.0
     
     public static func ask(_ question: String) -> Reading? {
-        let seed = seed(from: question)
-        return try? ask(question, seed: seed)
+        // Add real entropy like the JavaScript version with {entropy: true}
+        let questionSeed = seed(from: question)
+        let timeSeed = UInt64(Date().timeIntervalSince1970 * 1000000) // microseconds
+        let randomSeed = UInt64.random(in: UInt64.min...UInt64.max)
+        
+        // Combine multiple entropy sources
+        var hasher = Hasher()
+        hasher.combine(questionSeed)
+        hasher.combine(timeSeed)
+        hasher.combine(randomSeed)
+        let finalSeed = UInt64(bitPattern: Int64(hasher.finalize()))
+        
+        return try? ask(question, seed: finalSeed)
+    }
+    
+    // Deterministic version for testing
+    public static func ask(_ question: String, deterministic: Bool) -> Reading? {
+        if deterministic {
+            let seed = seed(from: question)
+            return try? ask(question, seed: seed)
+        } else {
+            return ask(question) // Use the non-deterministic version
+        }
     }
     
     // Now throws on error

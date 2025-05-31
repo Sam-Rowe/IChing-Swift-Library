@@ -50,14 +50,10 @@ import Testing
 @Test func testAskIntegrationDeterministic() async throws {
     let question = "What is the way?"
     let seed = IChing.seed(from: question)
-    do {
-        let reading = try IChing.ask(question, seed: seed)
-        #expect(reading.hexagram.number >= 1)
-        #expect(reading.hexagram.lines.count == 6)
-    } catch IChing.IChingError.unexpectedLineValue(let value) {
-        // This is expected during tests with our current implementation
-        #expect(value >= 0, "Unexpected line value should be a valid number")
-    }
+    let reading = try IChing.ask(question, seed: seed)
+    #expect(reading.hexagram.number >= 1)
+    #expect(reading.hexagram.number <= 64)
+    #expect(reading.hexagram.lines.count == 6)
 }
 
 @Test func testAskEdgeCases() async throws {
@@ -131,5 +127,48 @@ import Testing
         #expect(Bool(true))
     } else {
         #expect(Bool(true))
+    }
+}
+
+@Test func testLineValueGeneration() async throws {
+    // Test that generateALine only produces valid I Ching line values (6, 7, 8, 9)
+    var rng = IChing.SeededGenerator(seed: 12345)
+    let validLineValues = Set([6, 7, 8, 9])
+    
+    for _ in 0..<100 {
+        let lineValue = try IChing.generateALine(using: &rng)
+        #expect(validLineValues.contains(lineValue), "Line value \(lineValue) is not valid. Expected 6, 7, 8, or 9")
+    }
+}
+
+@Test func testLineValueDistribution() async throws {
+    // Test that all valid line values can be generated
+    var rng = IChing.SeededGenerator(seed: 54321)
+    var generatedValues = Set<Int>()
+    
+    // Generate enough lines to likely see all 4 possible values
+    for _ in 0..<200 {
+        let lineValue = try IChing.generateALine(using: &rng)
+        generatedValues.insert(lineValue)
+    }
+    
+    // We should see all four traditional I Ching line values
+    #expect(generatedValues.contains(6), "Should generate Old Yin (6)")
+    #expect(generatedValues.contains(7), "Should generate Young Yang (7)")
+    #expect(generatedValues.contains(8), "Should generate Young Yin (8)")
+    #expect(generatedValues.contains(9), "Should generate Old Yang (9)")
+}
+
+@Test func testCompositeValueRange() async throws {
+    // Test that generateComposite only produces values 2 or 3
+    var rng = IChing.SeededGenerator(seed: 99999)
+    let validCompositeNumbers = Set([2, 3])
+    
+    for stalks in [49, 40, 32] { // Test with different stalk counts
+        let composite = try IChing.generateComposite(numberOfStalks: stalks, using: &rng)
+        #expect(validCompositeNumbers.contains(composite.number), 
+                "Composite number \(composite.number) is not valid. Expected 2 or 3")
+        #expect(composite.stalksUsed >= 4 && composite.stalksUsed <= 9,
+                "Stalks used \(composite.stalksUsed) should be between 4 and 9")
     }
 }

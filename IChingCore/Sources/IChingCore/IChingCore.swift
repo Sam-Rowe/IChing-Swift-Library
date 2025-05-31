@@ -35,14 +35,6 @@ public class IChing {
             case 6:
                 hexagramReadingLines.append(0)
                 changingReadingLines.append(1)
-            case 5:
-                // Young Yang (not changing) - same as 7
-                hexagramReadingLines.append(1)
-                changingReadingLines.append(0)
-            case 4:
-                // Young Yin (not changing) - same as 8
-                hexagramReadingLines.append(0)
-                changingReadingLines.append(0)
             default:
                 throw IChingError.unexpectedLineValue(line)
             }
@@ -61,7 +53,8 @@ public class IChing {
     internal static func generateALine(using rng: inout SeededGenerator) throws -> Int {
         var stalks: Int = 49
         var lineSum = 0
-        for _ in 1..<3 {
+        // Perform 3 operations with the yarrow stalks as described in Wilhelm
+        for _ in 1...3 {
             let comp = try generateComposite(numberOfStalks: stalks, using: &rng)
             stalks -= comp.stalksUsed
             lineSum += comp.number

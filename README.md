@@ -16,7 +16,7 @@ Add this package to your Swift project using Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Sam-Rowe/IChing-Swift-Library.git", from: "1.0.1")
+    .package(url: "https://github.com/Sam-Rowe/IChing-Swift-Library.git", from: "1.0.3")
 ]
 ```
 

@@ -16,7 +16,7 @@ Add this package to your Swift project using Swift Package Manager:
 
 ```swift
 dependencies: [
-    .package(url: "https://github.com/Sam-Rowe/IChing-Swift-Library.git", from: "1.0.0")
+    .package(url: "https://github.com/Sam-Rowe/IChing-Swift-Library.git", from: "1.0.1")
 ]
 ```
 
@@ -109,7 +109,6 @@ This library implements the traditional I Ching yarrow stalk divination method:
 Run the test suite to verify the implementation:
 
 ```bash
-cd IChingCore
 swift test
 ```
 
@@ -124,6 +123,18 @@ The test suite includes:
 
 This implementation has been verified against JavaScript reference implementations and produces mathematically correct I Ching line values following the traditional yarrow stalk method. The core algorithm was fixed to perform exactly 3 operations per line generation, ensuring authentic I Ching divination results.
 
+## Thanks and references
+
+Software is a team game and we build on the shoulders of giants. I never forget that. 
+
+With that in mind I want to thank @strobus for the [Node implementation of the I-Ching](https://github.com/strobus/i-ching) that I have used as a reference when I wanted to make this Swift implementation. 
+
+I want to thank Wikipedia for the I-Ching page that helped me understand the process with Yarrow sticks. 
+
+I want to thank Jon Redfern for your support and help with understanding the use cases and giving me the motivation to push myself outside of my boundaries. Go checkout [Jon's music if you haven't already](https://open.spotify.com/artist/1vI7P0C5GpcJcMol09kkKM)
+
+Finally I want to thank GitHub for hosting and GitHub Copilot for helping me fix plenty of bugs along the way.
+
 ## License
 
-[Add your license here]
+[MIT License](./LICENSE)
